@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Faqat emaili tasdiqlangan foydalanuvchilar
+    function authed() { return request.auth != null && request.auth.token.email_verified == true; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    // Do'kon egasi
+    function isOwner() { return authed() && myEmail() in __OWNERS__; }
+    // Egasi qo'shgan sotuvchilar
+    function isStaff() { return authed() && exists(/databases/$(database)/documents/xodimlar/$(myEmail())); }
+    function member() { return isOwner() || isStaff(); }
+
+    // Savdo, rasxod, nasiya: hamma xodim ko'radi va kiritadi, o'chirishni faqat egasi qila oladi
+    match /savdo/{id}  { allow read, create, update: if member(); allow delete: if isOwner(); }
+    match /rasxod/{id} { allow read, create, update: if member(); allow delete: if isOwner(); }
+    match /nasiya/{id} { allow read, create, update: if member(); allow delete: if isOwner(); }
+    // Ilova egasini shu orqali taniydi (email kodda ochiq turmaydi)
+    match /egasi/{d} { allow read: if isOwner(); }
+    // Do'kon sozlamalari va sotuvchilar ro'yxati: faqat egasi o'zgartiradi
+    match /sozlama/{id} { allow read: if member(); allow write: if isOwner(); }
+    match /xodimlar/{email} {
+      allow read: if isOwner() || (authed() && email == myEmail());
+      allow write: if isOwner();
+    }
+  }
+}

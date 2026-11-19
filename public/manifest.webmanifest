@@ -1,0 +1,17 @@
+{
+  "name": "Do'kon daftari",
+  "short_name": "Daftar",
+  "description": "Savdo, rasxod va qarzlar hisobi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e9eef2",
+  "theme_color": "#0a7884",
+  "lang": "uz",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

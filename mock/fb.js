@@ -1,0 +1,26 @@
+// Sinov uchun soxta Firebase: xotirada ishlaydi, haqiqiy serverga ulanmaydi.
+const SEED = (typeof window !== 'undefined' && window.__SEED__) || {};
+const store = { savdo: {}, rasxod: {}, nasiya: {}, sozlama: {}, xodimlar: {} };
+Object.keys(SEED).forEach(c => (SEED[c] || []).forEach(d => { store[c][d.id] = Object.assign({}, d); }));
+const subs = [];
+const ping = () => subs.forEach(s => s());
+const MOCK_USER = (typeof window !== 'undefined' && window.__MOCK_USER__);
+export const auth = { currentUser: MOCK_USER ? Object.assign({ uid: 'u1', reload: async () => {}, getIdToken: async () => 't' }, MOCK_USER) : null };
+export const db = {};
+export const onAuthStateChanged = (a, cb) => { setTimeout(() => cb(auth.currentUser), 10); return () => {}; };
+export const signInWithEmailAndPassword = async () => { const e = new Error('x'); e.code = 'auth/invalid-credential'; throw e; };
+export const createUserWithEmailAndPassword = async () => ({ user: {} });
+export const sendEmailVerification = async () => {};
+export const sendPasswordResetEmail = async () => {};
+export const signOut = async () => {};
+export const collection = (d, name) => ({ kind: 'c', name });
+let n = 0;
+export const doc = (a, b, c) => (a && a.kind === 'c') ? { kind: 'd', coll: a.name, id: b || ('auto' + (++n)) } : { kind: 'd', coll: b, id: c };
+const snapC = name => ({ docs: Object.entries(store[name] || {}).map(([id, v]) => ({ id, data: () => v })), metadata: { fromCache: false } });
+const snapD = r => ({ exists: () => !!(store[r.coll] || {})[r.id], data: () => (store[r.coll] || {})[r.id] });
+export const onSnapshot = (ref, next) => { const f = () => next(ref.kind === 'c' ? snapC(ref.name) : snapD(ref)); subs.push(f); setTimeout(f, 5); return () => {}; };
+export const setDoc = async (r, v) => { store[r.coll][r.id] = Object.assign({}, v); ping(); };
+export const updateDoc = async (r, v) => { store[r.coll][r.id] = Object.assign({}, store[r.coll][r.id], v); ping(); };
+export const deleteDoc = async r => { delete store[r.coll][r.id]; ping(); };
+export const getDoc = async r => { if (r.coll === 'egasi' && !(auth.currentUser && auth.currentUser.email === 'egasi@test.uz')) { const e = new Error('denied'); e.code = 'permission-denied'; throw e; } return snapD(r); };
+export const writeBatch = () => { const ops = []; return { set: (r, v) => ops.push([r, v]), commit: async () => { ops.forEach(([r, v]) => { store[r.coll][r.id] = Object.assign({}, v); }); ping(); } }; };
